@@ -359,6 +359,18 @@
     </div>
   </section>
 
+  <!-- ============ SHARE ============ -->
+  <section id="share">
+    <div class="sec-head"><h2>扫码分享</h2><span class="en">Share</span></div>
+    <div class="note-card" style="text-align:center">
+      <img src="qr.png" alt="行程二维码" style="width:190px;height:190px;border-radius:14px" />
+      <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted)">
+        扫码在手机上打开，或分享给同行的人<br>
+        <span style="color:#8a6a24">sitarawu.github.io/egypt-trip</span>
+      </p>
+    </div>
+  </section>
+
 </div>
 
 <footer>EGYPT · 2026 ｜ 点开地点可跳转 Google 地图</footer>
@@ -459,9 +471,13 @@ const DAYS = [
     date:"10.24", dow:"返程", city:"赫尔格达 → 开罗 → 阿布扎比 → 北京", color:"#b48a3c",
     wx:{ic:"☀️", hi:30, lo:22, city:"赫尔格达", p:[27.2579,33.8116]},
     items:[
-      {time:"上午", txt:"躺平休息"},
-      {time:"返程", txt:"SM8047 · EY714 · EY888 经开罗、阿布扎比返回北京",
-       note:"核对行李直挂与转机时间", place:"赫尔格达机场", p:[27.1783,33.7994]}
+      {time:"上午", txt:"躺平休息，整理行李、退房"},
+      {time:"—", txt:"SM8047 赫尔格达 → 开罗",
+       note:"核对行李直挂", place:"赫尔格达机场", p:[27.1783,33.7994]},
+      {time:"—", txt:"EY714 开罗 → 阿布扎比",
+       note:"中转，留意登机口", place:"开罗国际机场", p:[30.1116,31.4139]},
+      {time:"—", txt:"EY888 阿布扎比 → 北京",
+       note:"长途航班，抵达北京", place:"扎耶德国际机场", p:[24.4330,54.6511]}
     ]
   },
   {
