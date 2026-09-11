@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1115" />
+<title>埃及行 · 2026.10.16 – 10.25</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --bg:#f6f5f2;
+    --card:#ffffff;
+    --ink:#14161a;
+    --muted:#6b7280;
+    --line:#e8e6e1;
+    --accent:#b48a3c;
+    --accent-soft:#f3ecdd;
+    --night:#0f1115;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(20,22,26,.04), 0 8px 24px rgba(20,22,26,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  }
+  h1,h2,h3{font-family:"Songti SC","Noto Serif SC",Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:.01em;margin:0}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    background:
+      radial-gradient(120% 90% at 85% -10%, rgba(180,138,60,.35), transparent 55%),
+      radial-gradient(90% 80% at 0% 110%, rgba(180,138,60,.18), transparent 60%),
+      linear-gradient(160deg,#14161a,#1d2027 55%,#0f1115);
+    color:#fff;
+    padding:calc(56px + env(safe-area-inset-top)) 22px 40px;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size:22px 22px;
+    opacity:.5;pointer-events:none;
+  }
+  .hero .kicker{
+    font-size:12px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px;position:relative;
+  }
+  .hero h1{font-size:clamp(38px,12vw,60px);line-height:1.05;position:relative}
+  .hero .sub{
+    margin-top:16px;font-size:14px;color:rgba(255,255,255,.62);position:relative;
+    letter-spacing:.04em;
+  }
+  .hero .route{
+    margin-top:22px;display:flex;flex-wrap:wrap;gap:8px;position:relative;
+  }
+  .hero .route span{
+    font-size:12px;padding:6px 12px;border:1px solid rgba(255,255,255,.16);
+    border-radius:999px;color:rgba(255,255,255,.82);background:rgba(255,255,255,.04);
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  section{padding:34px 0 8px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin:0 4px 18px}
+  .sec-head h2{font-size:22px}
+  .sec-head .en{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    position:sticky;top:0;z-index:900;
+    backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+    background:rgba(246,245,242,.82);
+    border-bottom:1px solid var(--line);
+    display:flex;gap:4px;overflow-x:auto;
+    padding:8px 12px;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{
+    flex:0 0 auto;border:0;background:transparent;color:var(--muted);
+    font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px;
+    font-family:inherit;cursor:pointer;transition:.2s;
+  }
+  .tabs button.on{background:var(--night);color:#fff}
+
+  /* ---------- Day cards ---------- */
+  .day{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;
+  }
+  .day-head{
+    display:flex;align-items:center;gap:14px;
+    padding:16px 18px;border-bottom:1px solid var(--line);
+  }
+  .day-badge{
+    flex:0 0 auto;width:52px;height:52px;border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--accent-soft);color:#7a5a17;line-height:1;
+  }
+  .day-badge b{font-size:20px;font-family:"Songti SC",serif}
+  .day-badge small{font-size:10px;margin-top:3px;letter-spacing:.08em}
+  .day-title{flex:1;min-width:0}
+  .day-title h3{font-size:17px}
+  .day-title p{margin:3px 0 0;font-size:12.5px;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+
+  .items{list-style:none;margin:0;padding:6px 0}
+  .item{
+    display:flex;gap:14px;padding:11px 18px;position:relative;
+  }
+  .item + .item{border-top:1px solid rgba(232,230,225,.7)}
+  .item .time{
+    flex:0 0 74px;font-size:12px;color:var(--accent);font-weight:600;
+    font-variant-numeric:tabular-nums;padding-top:1px;
+  }
+  .item .body{flex:1;min-width:0}
+  .item .body .txt{font-size:14.5px;color:#26292f}
+  .item .body .note{font-size:12px;color:var(--muted);margin-top:2px}
+  .item a.place{
+    display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+    font-size:12px;color:#8a6a24;text-decoration:none;
+    border-bottom:1px dotted #cbb98a;padding-bottom:1px;
+  }
+  .item a.place:active{opacity:.6}
+  .item .pin{font-size:11px}
+
+  /* ---------- Weather ---------- */
+  .wx{
+    flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;
+    background:#fbfaf8;border:1px solid var(--line);border-radius:12px;
+    padding:6px 10px;min-width:60px;
+  }
+  .wx .ic{font-size:16px;line-height:1}
+  .wx .t{font-size:12.5px;font-weight:600;color:#26292f;font-variant-numeric:tabular-nums}
+  .wx .t small{font-weight:400;color:var(--muted)}
+  .wx .c{font-size:9.5px;color:var(--muted);letter-spacing:.04em}
+  .wx .tag{font-size:8.5px;color:#8a6a24;letter-spacing:.03em}
+  .wx-live .tag{color:#2f8f6f}
+  .wx-note{
+    margin:14px 4px 0;font-size:11.5px;color:var(--muted);line-height:1.6;
+    display:flex;gap:7px;align-items:flex-start;
+  }
+  .wx-note .ic{flex:0 0 auto}
+
+  /* ---------- Map ---------- */
+  .map-shell{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  #map{height:min(62vh,520px);width:100%;background:#eae7e0}
+  .map-bar{
+    display:flex;gap:6px;overflow-x:auto;padding:12px 14px;border-top:1px solid var(--line);
+    scrollbar-width:none;
+  }
+  .map-bar::-webkit-scrollbar{display:none}
+  .map-bar button{
+    flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--muted);
+    font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;
+    transition:.2s;
+  }
+  .map-bar button.on{background:var(--night);border-color:var(--night);color:#fff}
+  .leaflet-popup-content{font-family:inherit;font-size:13px;line-height:1.5;margin:12px 14px}
+  .leaflet-popup-content b{font-family:"Songti SC",serif;font-size:14px}
+  .leaflet-popup-content a{display:inline-block;margin-top:8px;color:#8a6a24;font-weight:600;text-decoration:none}
+  .leaflet-container a.leaflet-popup-close-button{color:#9ca3af}
+
+  /* ---------- Notes ---------- */
+  .notes{display:grid;gap:12px}
+  .note-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:16px 18px;
+  }
+  .note-card h3{font-size:15px;display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .note-card h3 .ic{
+    width:26px;height:26px;border-radius:8px;background:var(--accent-soft);
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .note-card ul{margin:0;padding-left:18px;color:#3d424b;font-size:13.5px}
+  .note-card li{margin:5px 0}
+
+  /* ---------- Todo ---------- */
+  .todo{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden}
+  .todo-add{display:flex;gap:8px;padding:14px}
+  .todo-add input{
+    flex:1;border:1px solid var(--line);border-radius:12px;padding:11px 13px;
+    font-size:14px;font-family:inherit;outline:none;background:#fbfaf8;color:var(--ink);
+  }
+  .todo-add input:focus{border-color:var(--accent);background:#fff}
+  .todo-add button{
+    border:0;background:var(--night);color:#fff;border-radius:12px;padding:0 18px;
+    font-size:14px;font-family:inherit;cursor:pointer;flex:0 0 auto;
+  }
+  .todo-list{list-style:none;margin:0;padding:0 0 6px}
+  .todo-list li{
+    display:flex;align-items:flex-start;gap:12px;padding:12px 18px;cursor:pointer;
+    border-top:1px solid rgba(232,230,225,.7);
+  }
+  .todo-list .box{
+    flex:0 0 auto;width:21px;height:21px;border:1.6px solid #c9c6bf;border-radius:6px;
+    margin-top:1px;display:flex;align-items:center;justify-content:center;
+    transition:.18s;color:transparent;font-size:13px;
+  }
+  .todo-list li.done .box{background:var(--accent);border-color:var(--accent);color:#fff}
+  .todo-list li.done .label{text-decoration:line-through;color:#a8a5a0}
+  .todo-list .label{flex:1;font-size:14px;color:#26292f}
+  .todo-list .del{
+    flex:0 0 auto;border:0;background:transparent;color:#c9c6bf;font-size:18px;
+    cursor:pointer;padding:0 2px;line-height:1;align-self:center;
+  }
+  .todo-list .del:active{color:#d9534f}
+  .todo-foot{padding:10px 18px 16px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:11.5px;padding:34px 16px 24px;
+    letter-spacing:.06em;
+  }
+
+  /* ---------- Bottom nav (mobile) ---------- */
+  .bottom-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:950;
+    display:flex;justify-content:space-around;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.9);
+    backdrop-filter:blur(16px) saturate(180%);
+    -webkit-backdrop-filter:blur(16px) saturate(180%);
+    border-top:1px solid var(--line);
+  }
+  .bottom-nav a{
+    flex:1;text-decoration:none;color:var(--muted);font-size:10.5px;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;
+    font-family:inherit;
+  }
+  .bottom-nav a .g{font-size:18px;line-height:1}
+  .bottom-nav a.on{color:var(--ink)}
+  @media(min-width:820px){
+    .bottom-nav{display:none}
+    body{padding-bottom:24px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">Egypt · 2026</div>
+  <h1>埃及行</h1>
+  <div class="sub">10.16 – 10.25 ｜ 加德满都 · 阿布扎比 · 开罗 · 阿斯旺 · 卢克索 · 赫尔格达</div>
+  <div class="route">
+    <span>尼罗河邮轮</span><span>金字塔</span><span>神庙巡礼</span>
+    <span>红海出海</span><span>10 天</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-target="itinerary" class="on">每日行程</button>
+  <button data-target="map-sec">地图路线</button>
+  <button data-target="notes">注意事项</button>
+  <button data-target="todo">待办清单</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ ITINERARY ============ -->
+  <section id="itinerary">
+    <div class="sec-head"><h2>每日行程</h2><span class="en">Itinerary</span></div>
+    <div id="days"></div>
+    <div class="wx-note">
+      <span class="ic">🌤️</span>
+      <span>天气为近三年十月同期的气候平均值（数据来源 Open-Meteo）。临近出发 16 天内，页面会自动切换为实时预报并标注「实时预报」。</span>
+    </div>
+  </section>
+
+  <!-- ============ MAP ============ -->
+  <section id="map-sec">
+    <div class="sec-head"><h2>地图路线</h2><span class="en">Route Map</span></div>
+    <div class="map-shell">
+      <div id="map"></div>
+      <div class="map-bar" id="mapBar"></div>
+    </div>
+  </section>
+
+  <!-- ============ NOTES ============ -->
+  <section id="notes">
+    <div class="sec-head"><h2>注意事项</h2><span class="en">Good to know</span></div>
+    <div class="notes">
+      <div class="note-card">
+        <h3><span class="ic">💵</span>货币与小费</h3>
+        <ul>
+          <li>当地货币为埃及镑（EGP），机场与市区可换，建议备一些美元现金。</li>
+          <li>埃及是小费社会，厕所、行李、导游、司机通常需 20–50 EGP 小费，多备零钱。</li>
+          <li>刷卡在大酒店可用，市集、包车、出海多收现金。</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3><span class="ic">🚰</span>饮食与健康</h3>
+        <ul>
+          <li>只喝瓶装水，避免生冷、路边冰饮与未削皮水果。</li>
+          <li>防晒霜、太阳镜、遮阳帽必备；神庙景点几乎没有遮蔽。</li>
+          <li>随身带肠胃药、晕船药（邮轮段）与常用药。</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3><span class="ic">🕌</span>文化与着装</h3>
+        <ul>
+          <li>进入清真寺需脱鞋、女性遮盖头发与肩腿；建议随身带薄围巾。</li>
+          <li>部分神庙、陵墓内禁止拍照或需另购拍摄票，听从现场指示。</li>
+          <li>避免对当地人（尤其女性）未经同意拍照。</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3><span class="ic">✈️</span>交通与转机</h3>
+        <ul>
+          <li>10.16 阿布扎比中转 3 小时 25 分，需 <b>重新托运并办理登机</b>，留足时间。</li>
+          <li>10.21 卢克索结束后包车前往赫尔格达，车程较长，提前确认司机与行李。</li>
+          <li>返程经阿布扎比转机（SM8047 / EY714 / EY888），核对行李直挂情况。</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3><span class="ic">🛳️</span>邮轮与出海</h3>
+        <ul>
+          <li>10.18–10.21 尼罗河邮轮，登船后确认每日停靠点与集合时间。</li>
+          <li>10.23 Orange Island 出海，带泳衣、防晒、防水袋与毛巾。</li>
+          <li>船上与出海注意随身财物，贵重物品放保险箱。</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3><span class="ic">🛡️</span>安全与通讯</h3>
+        <ul>
+          <li>景点区注意兜售与“热心带路”，坚持拒绝并走向人多处。</li>
+          <li>夜间尽量结伴，使用正规打车软件（Uber / Careem）。</li>
+          <li>购买当地电话卡或开通漫游，提前下载离线地图与翻译。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TODO ============ -->
+  <section id="todo">
+    <div class="sec-head"><h2>待办清单</h2><span class="en">Checklist</span></div>
+    <div class="todo">
+      <div class="todo-add">
+        <input id="todoInput" type="text" placeholder="添加一条待办…" />
+        <button id="todoAdd">添加</button>
+      </div>
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="todo-foot">
+        <span id="todoStat">0 / 0 已完成</span>
+        <span style="cursor:pointer" id="todoClear">清除已完成</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>EGYPT · 2026 ｜ 点开地点可跳转 Google 地图</footer>
+
+<nav class="bottom-nav" id="bottomNav">
+  <a href="#itinerary" data-target="itinerary" class="on"><span class="g">🗓️</span>行程</a>
+  <a href="#map-sec" data-target="map-sec"><span class="g">🗺️</span>地图</a>
+  <a href="#notes" data-target="notes"><span class="g">📌</span>注意</a>
+  <a href="#todo" data-target="todo"><span class="g">✅</span>待办</a>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* =========================================================
+   行程数据  —— 只需改这里即可维护
+   p: [lat, lng]  用于地图与 Google 地图跳转
+   ========================================================= */
+const DAYS = [
+  {
+    date:"10.16", dow:"启程日", city:"加德满都 → 阿布扎比 → 开罗", color:"#b48a3c",
+    wx:{ic:"☀️", hi:30, lo:18, city:"开罗", p:[30.0444,31.2357]},
+    items:[
+      {time:"10:10–13:05", txt:"离使馆前往特里布万国际机场，乘 3L044 前往阿联酋",
+       place:"特里布万国际机场", p:[27.6966,85.3591]},
+      {time:"13:05–16:30", txt:"抵达阿布扎比 扎耶德国际机场 A 航站楼，中转 3 小时 25 分钟",
+       note:"需重新托运并办理登机", place:"扎耶德国际机场", p:[24.4330,54.6511]},
+      {time:"16:30–19:05", txt:"抵达埃及 开罗国际机场 T3",
+       place:"开罗国际机场 T3", p:[30.1116,31.4139]},
+      {time:"20:00", txt:"出关，打车前往酒店"},
+      {time:"20:30", txt:"抵达酒店（待定）休息"}
+    ]
+  },
+  {
+    date:"10.17", dow:"开罗", city:"金字塔 · 埃及博物馆 · 洞穴教堂 · 萨拉赫城堡", color:"#c0703a",
+    wx:{ic:"☀️", hi:31, lo:19, city:"开罗", p:[30.0444,31.2357]},
+    items:[
+      {time:"07:30", txt:"酒店早餐"},
+      {time:"08:00", txt:"前往金字塔游览", place:"吉萨金字塔", p:[29.9792,31.1342]},
+      {time:"10:00", txt:"前往埃及博物馆游览", place:"埃及博物馆", p:[30.0478,31.2336]},
+      {time:"中午", txt:"午餐（地点待定）"},
+      {time:"14:00", txt:"洞穴教堂", place:"洞穴教堂", p:[30.0116,31.2790]},
+      {time:"16:00", txt:"萨拉赫城堡", place:"萨拉丁城堡", p:[30.0299,31.2611]},
+      {time:"18:00", txt:"晚餐（地点待定）"},
+      {time:"19:00", txt:"逛街（待定）"}
+    ]
+  },
+  {
+    date:"10.18", dow:"阿斯旺", city:"邮轮行 · 阿斯旺大坝 · 未完成方尖碑 · 莱费神庙", color:"#3f7d8c",
+    wx:{ic:"☀️", hi:34, lo:21, city:"阿斯旺", p:[24.0889,32.8998]},
+    items:[
+      {time:"全天", txt:"邮轮行：阿斯旺大坝", place:"阿斯旺大坝", p:[23.9710,32.8773]},
+      {time:"全天", txt:"邮轮行：未完成方尖碑", place:"未完成方尖碑", p:[24.0768,32.8956]},
+      {time:"全天", txt:"邮轮行：莱费神庙", place:"菲莱神庙", p:[24.0258,32.8842]}
+    ]
+  },
+  {
+    date:"10.19", dow:"阿斯旺", city:"邮轮行 · 阿布辛贝神庙 · 坑翁波神庙", color:"#3f7d8c",
+    wx:{ic:"☀️", hi:35, lo:20, city:"阿斯旺", p:[24.0889,32.8998]},
+    items:[
+      {time:"全天", txt:"邮轮行：阿布辛贝神庙", place:"阿布辛贝神庙", p:[22.3372,31.6258]},
+      {time:"全天", txt:"邮轮行：坑翁波神庙", place:"康翁波神庙", p:[24.4782,32.9282]}
+    ]
+  },
+  {
+    date:"10.20", dow:"卢克索", city:"邮轮行 · 伊德福神庙 · 卢克索神庙", color:"#6a6a9c",
+    wx:{ic:"☀️", hi:35, lo:20, city:"卢克索", p:[25.6872,32.6396]},
+    items:[
+      {time:"全天", txt:"邮轮行：伊德福神庙", place:"伊德福神庙", p:[24.9770,32.8733]},
+      {time:"全天", txt:"邮轮行：卢克索神庙", place:"卢克索神庙", p:[25.6995,32.6390]}
+    ]
+  },
+  {
+    date:"10.21", dow:"卢克索 → 赫尔格达", city:"帝王谷 · 哈特谢普瑟特神庙 · 门农巨像 · 卡尔纳克神庙 · 包车", color:"#6a6a9c",
+    wx:{ic:"☀️", hi:36, lo:20, city:"卢克索", p:[25.6872,32.6396]},
+    items:[
+      {time:"全天", txt:"邮轮行：帝王谷", place:"帝王谷", p:[25.7402,32.6014]},
+      {time:"全天", txt:"邮轮行：哈特谢普瑟特神庙", place:"哈特谢普瑟特神庙", p:[25.7382,32.6065]},
+      {time:"全天", txt:"邮轮行：门农巨像", place:"门农巨像", p:[25.7205,32.6103]},
+      {time:"全天", txt:"邮轮行：卡尔纳克神庙", place:"卡尔纳克神庙", p:[25.7188,32.6573]},
+      {time:"傍晚", txt:"包车前往赫尔格达", place:"赫尔格达", p:[27.2579,33.8116]}
+    ]
+  },
+  {
+    date:"10.22", dow:"赫尔格达", city:"躺平休息", color:"#2f8f6f",
+    wx:{ic:"☀️", hi:30, lo:23, city:"赫尔格达", p:[27.2579,33.8116]},
+    items:[
+      {time:"全天", txt:"躺平休息，酒店/海边自由活动"}
+    ]
+  },
+  {
+    date:"10.23", dow:"赫尔格达", city:"出海 Orange Island", color:"#2f8f6f",
+    wx:{ic:"☀️", hi:30, lo:22, city:"赫尔格达", p:[27.2579,33.8116]},
+    items:[
+      {time:"全天", txt:"出海 Orange Island（浮潜 / 海岛）", place:"Orange Island", p:[27.3167,33.8333]}
+    ]
+  },
+  {
+    date:"10.24", dow:"返程", city:"赫尔格达 → 开罗 → 阿布扎比 → 北京", color:"#b48a3c",
+    wx:{ic:"☀️", hi:30, lo:22, city:"赫尔格达", p:[27.2579,33.8116]},
+    items:[
+      {time:"上午", txt:"躺平休息"},
+      {time:"返程", txt:"SM8047 · EY714 · EY888 经开罗、阿布扎比返回北京",
+       note:"核对行李直挂与转机时间", place:"赫尔格达机场", p:[27.1783,33.7994]}
+    ]
+  },
+  {
+    date:"10.25", dow:"抵达", city:"返回北京", color:"#b48a3c",
+    wx:{ic:"☀️", hi:19, lo:8, city:"北京", p:[39.9042,116.4074]},
+    items:[
+      {time:"—", txt:"抵达北京，行程结束", place:"北京", p:[39.9042,116.4074]}
+    ]
+  }
+];
+
+const GM = (name,p) =>
+  "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p[0]+","+p[1]) +
+  (name ? "%20" + encodeURIComponent(name) : "");
+
+/* ---------- render days ---------- */
+const daysEl = document.getElementById("days");
+DAYS.forEach(d=>{
+  const card = document.createElement("article");
+  card.className = "day";
+  card.id = "day-" + d.date.replace(".","-");
+  const [m,dd] = d.date.split(".");
+  card.innerHTML = `
+    <div class="day-head">
+      <div class="day-badge"><b>${dd}</b><small>${m}月</small></div>
+      <div class="day-title">
+        <h3>${d.dow}</h3>
+        <p>${d.city}</p>
+      </div>
+      ${d.wx?`<div class="wx" data-wx="${d.date}">
+        <span class="ic">${d.wx.ic}</span>
+        <span class="t">${d.wx.hi}°<small>/${d.wx.lo}°</small></span>
+        <span class="c">${d.wx.city}</span>
+        <span class="tag">气候参考</span>
+      </div>`:""}
+      <span class="day-dot" style="background:${d.color}"></span>
+    </div>
+    <ul class="items">
+      ${d.items.map(it=>`
+        <li class="item">
+          <span class="time">${it.time}</span>
+          <div class="body">
+            <div class="txt">${it.txt}</div>
+            ${it.note?`<div class="note">${it.note}</div>`:""}
+            ${it.p?`<a class="place" target="_blank" rel="noopener" href="${GM(it.place,it.p)}">
+              <span class="pin">📍</span>${it.place} · Google 地图</a>`:""}
+          </div>
+        </li>`).join("")}
+    </ul>`;
+  daysEl.appendChild(card);
+});
+
+/* =========================================================
+   Map
+   ========================================================= */
+const map = L.map("map",{scrollWheelZoom:false,zoomControl:true}).setView([26.5,32.5],6);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+  maxZoom:19,
+  attribution:'&copy; OpenStreetMap &copy; CARTO'
+}).addTo(map);
+
+const layers = {};        // day.date -> L.layerGroup
+const boundsAll = [];
+
+DAYS.forEach(d=>{
+  const pts = d.items.filter(i=>i.p).map(i=>i.p);
+  if(!pts.length) return;
+  const g = L.layerGroup();
+  pts.forEach((p,idx)=>{
+    const it = d.items.filter(i=>i.p)[idx];
+    L.circleMarker(p,{
+      radius:8,color:"#fff",weight:2,fillColor:d.color,fillOpacity:1
+    }).addTo(g).bindPopup(
+      `<b>${d.date} ${d.dow}</b><br>${it.txt}` +
+      `<br><a href="${GM(it.place,it.p)}" target="_blank" rel="noopener">在 Google 地图打开 →</a>`
+    );
+    boundsAll.push(p);
+  });
+  if(pts.length>1){
+    L.polyline(pts,{color:d.color,weight:3,opacity:.75,dashArray:"6 6"}).addTo(g);
+  }
+  g.addTo(map);
+  layers[d.date] = g;
+});
+
+/* fit all */
+if(boundsAll.length) map.fitBounds(boundsAll,{padding:[30,30]});
+
+/* day filter bar */
+const bar = document.getElementById("mapBar");
+const mkBtn = (label,key,on)=>{
+  const b = document.createElement("button");
+  b.textContent = label;
+  if(on) b.classList.add("on");
+  b.onclick = ()=>{
+    [...bar.children].forEach(c=>c.classList.remove("on"));
+    b.classList.add("on");
+    Object.values(layers).forEach(g=>map.removeLayer(g));
+    if(key==="all"){
+      Object.values(layers).forEach(g=>g.addTo(map));
+      if(boundsAll.length) map.fitBounds(boundsAll,{padding:[30,30]});
+    }else if(layers[key]){
+      layers[key].addTo(map);
+      const pts = DAYS.find(d=>d.date===key).items.filter(i=>i.p).map(i=>i.p);
+      map.fitBounds(pts,{padding:[40,40],maxZoom:12});
+    }
+  };
+  bar.appendChild(b);
+};
+mkBtn("全部","all",true);
+DAYS.forEach(d=>{ if(layers[d.date]) mkBtn(d.date,d.date,false); });
+
+/* =========================================================
+   Tabs + bottom nav scroll sync
+   ========================================================= */
+const tabs = [...document.querySelectorAll("#tabs button")];
+const navs = [...document.querySelectorAll("#bottomNav a")];
+function activate(id){
+  tabs.forEach(t=>t.classList.toggle("on",t.dataset.target===id));
+  navs.forEach(n=>n.classList.toggle("on",n.dataset.target===id));
+}
+tabs.forEach(t=>t.onclick=()=>{
+  document.getElementById(t.dataset.target)
+    .scrollIntoView({behavior:"smooth",block:"start"});
+});
+const spy = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting) activate(e.target.id); });
+},{rootMargin:"-45% 0px -50% 0px"});
+["itinerary","map-sec","notes","todo"].forEach(id=>{
+  const el = document.getElementById(id); if(el) spy.observe(el);
+});
+
+/* =========================================================
+   Todo (localStorage)
+   ========================================================= */
+const DEFAULT_TODOS = [
+  "确认护照有效期 ≥ 6 个月",
+  "办理埃及签证 / 落地签材料",
+  "兑换美元现金与小额零钱（小费）",
+  "购买旅行保险",
+  "预订开罗酒店（10.16–10.17）",
+  "确认尼罗河邮轮行程与登船点",
+  "确认卢克索→赫尔格达包车",
+  "预订 Orange Island 出海",
+  "开通国际漫游或买埃及电话卡",
+  "下载离线地图（Google Maps 离线区域）",
+  "准备欧标转换插头（埃及 C/F 型）",
+  "打包：防晒霜、遮阳帽、泳衣、薄围巾、常用药"
+];
+const KEY = "egypt_todo_v1";
+let todos = [];
+try{ todos = JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ todos=null; }
+if(!todos){
+  todos = DEFAULT_TODOS.map(t=>({t, done:false}));
+  save();
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(todos)); }catch(e){} }
+
+const listEl = document.getElementById("todoList");
+const statEl = document.getElementById("todoStat");
+function renderTodos(){
+  listEl.innerHTML = "";
+  todos.forEach((it,i)=>{
+    const li = document.createElement("li");
+    if(it.done) li.classList.add("done");
+    li.innerHTML = `<span class="box">✓</span><span class="label"></span>
+      <button class="del" aria-label="删除">×</button>`;
+    li.querySelector(".label").textContent = it.t;
+    li.addEventListener("click",e=>{
+      if(e.target.classList.contains("del")) return;
+      it.done = !it.done; save(); renderTodos();
+    });
+    li.querySelector(".del").addEventListener("click",e=>{
+      e.stopPropagation(); todos.splice(i,1); save(); renderTodos();
+    });
+    listEl.appendChild(li);
+  });
+  const done = todos.filter(t=>t.done).length;
+  statEl.textContent = `${done} / ${todos.length} 已完成`;
+}
+renderTodos();
+
+document.getElementById("todoAdd").onclick = addTodo;
+document.getElementById("todoInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter") addTodo();
+});
+function addTodo(){
+  const inp = document.getElementById("todoInput");
+  const v = inp.value.trim(); if(!v) return;
+  todos.push({t:v,done:false}); inp.value=""; save(); renderTodos();
+}
+document.getElementById("todoClear").onclick = ()=>{
+  todos = todos.filter(t=>!t.done); save(); renderTodos();
+};
+
+/* =========================================================
+   Live weather (auto-upgrade within 16-day forecast window)
+   ========================================================= */
+const TRIP_YEAR = "2026";
+function wmoIcon(c){
+  if(c===0) return "☀️";
+  if(c<=2) return "🌤️";
+  if(c===3) return "☁️";
+  if(c===45||c===48) return "🌫️";
+  if(c>=51&&c<=57) return "🌦️";
+  if(c>=61&&c<=67) return "🌧️";
+  if(c>=71&&c<=77) return "❄️";
+  if(c>=80&&c<=82) return "🌦️";
+  if(c>=95) return "⛈️";
+  return "🌤️";
+}
+async function loadLiveWeather(){
+  const groups = {};
+  DAYS.forEach(d=>{
+    if(!d.wx||!d.wx.p) return;
+    const k = d.wx.p.join(",");
+    (groups[k] = groups[k] || {p:d.wx.p, dates:[]}).dates.push(d.date);
+  });
+  await Promise.all(Object.values(groups).map(async g=>{
+    try{
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${g.p[0]}&longitude=${g.p[1]}`
+        + `&daily=weather_code,temperature_2m_max,temperature_2m_min`
+        + `&timezone=Africa%2FCairo&forecast_days=16`;
+      const res = await fetch(url);
+      if(!res.ok) return;
+      const dd = (await res.json()).daily;
+      const idx = {}; dd.time.forEach((t,i)=>idx[t]=i);
+      g.dates.forEach(dt=>{
+        const iso = TRIP_YEAR + "-" + dt.replace(".","-");
+        const i = idx[iso];
+        if(i===undefined) return;
+        const mx = Math.round(dd.temperature_2m_max[i]);
+        const mn = Math.round(dd.temperature_2m_min[i]);
+        const ic = wmoIcon(dd.weather_code[i]);
+        const day = DAYS.find(d=>d.date===dt);
+        if(day&&day.wx){ day.wx.hi=mx; day.wx.lo=mn; day.wx.ic=ic; }
+        const el = document.querySelector(`[data-wx="${dt}"]`);
+        if(el){
+          el.querySelector(".ic").textContent = ic;
+          el.querySelector(".t").innerHTML = mx + "°<small>/" + mn + "°</small>";
+          el.querySelector(".tag").textContent = "实时预报";
+          el.classList.add("wx-live");
+        }
+      });
+    }catch(e){ /* offline or blocked: keep climate averages */ }
+  }));
+}
+loadLiveWeather();
+</script>
+</body>
+</html>
